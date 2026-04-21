@@ -128,10 +128,10 @@ pwr.t.test(d = .65, sig.level = 0.05, power = 0.8,
 Click the link to go to the paper. Find the source data for Figure 2. Download the Excel file. Describe what you needed to do to collect the data for Figure 2(g). Note that you only need the `closer_vals` and `further_vals`. Ensure to `mutate()` the data to get a difference (e.g., `closer_vals - further_vals`).
 
 **Solution**
-In order to collect the data required for Figure 2(g), I would have to copy and paste the data from the sheets g.Farther_vals and g.Closer_vals and paste it into a new sheet, in columns with headings. Then I would read the data using read_csv. After this I would create a new column that contains the difference between the farther and closer vals. 
+In order to collect the data required for Figure 2(g), I copied the data from the sheets g.Farther_vals and g.Closer_vals and pasted it into a new sheet, in columns with headings. Then I read the data using read_csv. As we discussed in lab, I created the column that has the differences between the closer and farther data in excel rather than using mutate. 
 
 ```{r}
-read_csv("BirdFartherCloser")
+df = read_csv("BirdFartherCloserData.csv")
 ```
 
 
@@ -143,6 +143,63 @@ Summarize the data.
 * Summarize the paired differences. Do the data suggest that there is a difference between dopamine in the brains of young zebra finches when they sing further away compared to closer to their adult song?
 * **Optional Challenge** Can you reproduce Figure 2(g)? Note that the you can use \texttt{geom\_errorbar()} to plot the range created by adding the mean $\pm$ one standard deviation.
 
+**Solution**
+I chose to make a boxplot to represent the 
+
+```{r}
+(farthermean = mean(df$Farther))
+(closermean = mean(df$Closer))
+(diffmean = mean(df$Difference))
+```
+
+```{r}
+#| label: fig-box-farther
+#| fig-cap: "Corrected dopamine from the worst syllable quality"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(data = df, aes(x=Farther)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_bw() + 
+  labs(x = "Dopamine (corrected)",
+        y = NULL)
+```
+
+```{r}
+#| label: fig-box-closer
+#| fig-cap: "Corrected dopamine from the best syllable quality"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(data = df, aes(x=Closer)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_bw() + 
+  labs(x = "Dopamine (corrected)",
+        y = NULL)
+```
+
+```{r}
+#| label: fig-box-diff
+#| fig-cap: "Difference in corrected dopamine between both syllable qualities"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(data = df, aes(x=Difference)) +
+  geom_boxplot() +
+  coord_flip() +
+  theme_bw() + 
+  labs(x = "Dopamine (corrected)",
+        y = NULL)
+```
+
 ## Part d
 Conduct the inferences they do in the paper. Make sure to report the results a little more comprehensively -- that is your parenthetical should look something like: ($t=23.99$, $p<0.0001$; $g=1.34$; 95% CI: 4.43, 4.60). Ensure to verify any conditions for use.\
 **Note**: Your numbers will vary slightly because they reported two-sided test $p$-values instead of the specified one-sided tests. 
@@ -153,6 +210,26 @@ Conduct the inferences they do in the paper. Make sure to report the results a l
 **Note**: Use the appropriate one-sided test.
 * "The difference between populations was significant ($p=1.04 \times10^{-8}$).''\
 **Note**: Use the two-sided test.
+
+
+For each column of data (Farther, Closer, and Difference) I calculated the mean and standard deviation, and the corresponding t statistic to evaluate if the difference was significant or not. The null hypothesis was equal to zero, 
+```{r}
+farthersd = sd(data$Farther)
+mu0 = 0 
+n = 6
+(farthert.stat = (farthermean - mu0)/(farthersd/sqrt(n)))
+t.test(farthert.stat)
+
+
+closersd = sd(data$Closer)
+(closert.stat = (closermean - mu0)/(closersd/sqrt(n)))
+
+
+
+diffsd = sd(data$Difference)
+(difft.stat = (diffmean - mu0)/(diffsd/sqrt(n)))
+```
+
 
 ## Part e 
 
