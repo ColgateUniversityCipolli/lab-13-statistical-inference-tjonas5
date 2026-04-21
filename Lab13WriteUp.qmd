@@ -131,7 +131,7 @@ Click the link to go to the paper. Find the source data for Figure 2. Download t
 In order to collect the data required for Figure 2(g), I would have to copy and paste the data from the sheets g.Farther_vals and g.Closer_vals and paste it into a new sheet, in columns with headings. Then I would read the data using read_csv. After this I would create a new column that contains the difference between the farther and closer vals. 
 
 ```{r}
-
+read_csv("BirdFartherCloser")
 ```
 
 
