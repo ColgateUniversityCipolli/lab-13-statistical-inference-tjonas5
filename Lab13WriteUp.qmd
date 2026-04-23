@@ -131,7 +131,7 @@ Click the link to go to the paper. Find the source data for Figure 2. Download t
 In order to collect the data required for Figure 2(g), I copied the data from the sheets g.Farther_vals and g.Closer_vals and pasted it into a new sheet, in columns with headings. Then I read the data using read_csv. As we discussed in lab, I created the column that has the differences between the closer and farther data in excel rather than using mutate. 
 
 ```{r}
-df = read_csv("BirdFartherCloserData.csv")
+data.birds = read_csv("BirdFartherCloserData.csv")
 ```
 
 
@@ -147,12 +147,12 @@ Summarize the data.
 In this code, I first calculate the mean and standard deviation for each column in my data: Farther, Closer, and Difference. Then I chose to make a boxplot to represent the data for each column. As we can see in the boxplots, the data suggests that the dopamine in the brains of birds decreases when they sing futher away. It also suggests that 
 
 ```{r}
-(farthermean = mean(df$Farther))
-(farthersd = sd(df$Farther))
-(closermean = mean(df$Closer))
-(closersd = sd(df$Closer))
-(diffmean = mean(df$Difference))
-(diffsd = sd(df$Difference))
+(farthermean = mean(data.birds$Farther))
+(farthersd = sd(data.birds$Farther))
+(closermean = mean(data.birds$Closer))
+(closersd = sd(data.birds$Closer))
+(diffmean = mean(data.birds$Difference))
+(diffsd = sd(data.birds$Difference))
 ```
 
 ```{r}
@@ -163,7 +163,7 @@ In this code, I first calculate the mean and standard deviation for each column 
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
-ggplot(data = df, aes(x=Farther)) +
+ggplot(data = data.birds, aes(x=Farther)) +
   geom_boxplot() +
   coord_flip() +
   theme_bw() + 
@@ -179,7 +179,7 @@ ggplot(data = df, aes(x=Farther)) +
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
-ggplot(data = df, aes(x=Closer)) +
+ggplot(data = data.birds, aes(x=Closer)) +
   geom_boxplot() +
   coord_flip() +
   theme_bw() + 
@@ -195,7 +195,7 @@ ggplot(data = df, aes(x=Closer)) +
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
-ggplot(data = df, aes(x=Difference)) +
+ggplot(data = data.birds, aes(x=Difference)) +
   geom_boxplot() +
   coord_flip() +
   theme_bw() + 
@@ -221,16 +221,24 @@ Conduct the inferences they do in the paper. Make sure to report the results a l
 For each column of data (Farther, Closer, and Difference), I performed a t test. The null hypothesis was equal to zero. 
 ```{r}
 mu0 = 0 
-t.test(df$Farther, alternative = "less", mu = mu0)
+t.test(data.birds$Farther, alternative = "less", mu = mu0)
+t.test(data.birds$Farther)
 ```
 
-The far responses differed significantly from 0 ($t = -7.92$, $p = 1.86 * 10^(-8)$, CI: -$\inf$, $-.166$)
+The far responses differed significantly from 0 ($t = -7.92$, $p = 1.86 * 10^(-8)$, CI: -$.268$, $-.157$). This means that the null hypothesis can be rejected, and that the observed data is nearly 8 standard deviations away from the mean if the null was true. 
 
-(closert.stat = (closermean - mu0)/(closersd/sqrt(n)))
-
-(difft.stat = (diffmean - mu0)/(diffsd/sqrt(n)))
+```{r}
+t.test(data.birds$Closer, alternative = "greater", mu = mu0)
+t.test(data.birds$Closer)
 ```
 
+The close responses differed significantly from 0 ($t = 9.15$, $p = 1.33 * 10^(-9)$, CI: $.138$, $.218$). This means that the null hypothesis can be rejected, and that the observed data is more than 9 standard deviations away from the mean if the null was true. 
+
+```{r}
+t.test(data.birds$Difference, alternative = "two.sided", mu = mu0)
+```
+
+The difference between populations was significant ($t = 9.14$, $p = 2.75 * 10^(-9)$, CI: $.303$, $.479$). This means that the null hypothesis can be rejected, and that the observed data is more than 9 standard deviations away from the mean if the null was true. 
 
 ## Part e 
 
@@ -240,4 +248,18 @@ to highlight the rejection region and the $p$-value. Additionally, add the
 resampling distribution for $T$ to the chart to demonstrate any differences 
 between the null distribution and the distribution suggested by the data.
 
+```{r}
+n=6
+ggdat = tibble(t = seq(-4, 4, length.out=1000)) |>
+  mutate(pdf.h0 = dt(t, df =n-1))
 
+t.breaks <- seq(-24, 24, 4)
+
+ts <- rep(NA, 1000)
+s <- sd(data.birds$Farther)
+n <- nrow(data.birds)
+for(i in 1:1000){
+  curr.sample <- sample(data.birds$Farther, size=n, replace=T)
+  ts[i] <- (mean(curr.sample) - mu0)/(s/sqrt(n))
+}
+```
