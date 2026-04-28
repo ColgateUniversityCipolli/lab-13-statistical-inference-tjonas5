@@ -252,29 +252,30 @@ resampling distribution for $T$ to the chart to demonstrate any differences
 between the null distribution and the distribution suggested by the data.
 
 **Solution**
-
+ 
+### Birds are farther
 This code is for the first hypothesis test, when the birds are farther. 
 
 ```{r}
-n=6
+n=24
 ggdat = tibble(t = seq(-4, 4, length.out=1000)) |>
   mutate(pdf.h0 = dt(t, df =n-1))
 
+s <- sd(data.birds$Farther)
 t.breaks <- seq(-24, 24, 4)
 xbar.breaks <- round(t.breaks * (s/sqrt(n)) + mu0, 2)
 ts <- rep(NA, 1000)
-s <- sd(data.birds$Farther)
 n <- nrow(data.birds)
 for(i in 1:1000){
   curr.sample <- sample(data.birds$Farther, size=n, replace=T)
   ts[i] <- (mean(curr.sample) - mu0)/(s/sqrt(n))
 }
-
+tval_05 = qt(.05, 24)
 ```
 
 ```{r}
 #| label: fig-density-further
-#| fig-cap: "Null T distributuion and the observed T statistic (solid red)"
+#| fig-cap: "Null T distribution and the observed T statistic (solid red)"
 #| fig-width: 5
 #| fig-height: 3
 #| scale: "80%"
@@ -283,16 +284,13 @@ for(i in 1:1000){
 ggplot(ggdat) +
  geom_line(aes(x=t, y=pdf.h0))+ # plot distribution of T under H0
  stat_density(data=tibble(t=ts), aes(x=t), color="grey", geom="line")+
- geom_ribbon(data = ggdat |> filter(t < -2.015),
+ geom_ribbon(data = ggdat |> filter(t < tval_05),
   aes(x = t, ymin=0, ymax=pdf.h0),
   fill="darkorchid2", alpha=0.50)+
  geom_hline(yintercept=0) +
  # Plot observation
  geom_point(data=tibble(x=t_farther, y=0),
  aes(x=x, y=y), color="red", size=3) +
- # Plot mirrored observation
-#  geom_point(data=tibble(x=-t_farther, y=0),
-#  aes(x=x, y=y), color="red", size=3, alpha=0.3) +
  theme_bw()+
  # Specify axis ticks
  scale_x_continuous("t", breaks=t.breaks,
@@ -303,4 +301,91 @@ ggplot(ggdat) +
 
 Note that the resampling distribution is in light grey. This distribution, which is the sampling distribution estimated using only the data, does not appear to overlap at all with the null hypothesis distribution that is centered at zero. 
 
-# how do i know what the value to start highlighting under is 
+
+### Birds are closer
+
+```{r}
+ggdat = tibble(t = seq(-4, 4, length.out=1000)) |>
+  mutate(pdf.h0 = dt(t, df =n-1))
+
+s <- sd(data.birds$Closer)
+xbar.breaks <- round(t.breaks * (s/sqrt(n)) + mu0, 2)
+ts <- rep(NA, 1000)
+for(i in 1:1000){
+  curr.sample <- sample(data.birds$Closer, size=n, replace=T)
+  ts[i] <- (mean(curr.sample) - mu0)/(s/sqrt(n))
+}
+tval_05 = -qt(.05, 24)
+```
+
+```{r}
+#| label: fig-density-closer
+#| fig-cap: "Null T distribution and the observed T statistic (solid red)"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(ggdat) +
+ geom_line(aes(x=t, y=pdf.h0))+ # plot distribution of T under H0
+ stat_density(data=tibble(t=ts), aes(x=t), color="grey", geom="line")+
+ geom_ribbon(data = ggdat |> filter(t > tval_05),
+  aes(x = t, ymin=0, ymax=pdf.h0),
+  fill="darkorchid2", alpha=0.50)+
+ geom_hline(yintercept=0) +
+ # Plot observation
+ geom_point(data=tibble(x=t_closer, y=0),
+ aes(x=x, y=y), color="red", size=3) +
+ theme_bw()+
+ # Specify axis ticks
+ scale_x_continuous("t", breaks=t.breaks,
+ sec.axis = sec_axis(~., bquote(bar(x)),
+ breaks=t.breaks,
+ labels=xbar.breaks))
+
+
+```
+
+
+### Difference between closer and farther 
+
+```{r}
+ggdat = tibble(t = seq(-4, 4, length.out=1000)) |>
+  mutate(pdf.h0 = dt(t, df =n-1))
+
+s <- sd(data.birds$Difference)
+xbar.breaks <- round(t.breaks * (s/sqrt(n)) + mu0, 2)
+ts <- rep(NA, 1000)
+for(i in 1:1000){
+  curr.sample <- sample(data.birds$Difference, size=n, replace=T)
+  ts[i] <- (mean(curr.sample) - mu0)/(s/sqrt(n))
+}
+
+tval_025 = -qt(.025, 24)
+```
+
+```{r}
+#| label: fig-density-difference
+#| fig-cap: "Null T distribution and the observed T statistic (solid red)"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(ggdat) +
+ geom_line(aes(x=t, y=pdf.h0))+ # plot distribution of T under H0
+ stat_density(data=tibble(t=ts), aes(x=t), color="grey", geom="line")+
+ geom_ribbon(data = ggdat |> filter(t > tval_025),
+  aes(x = t, ymin=0, ymax=pdf.h0),
+  fill="darkorchid2", alpha=0.50)+
+ geom_hline(yintercept=0) +
+ # Plot observation
+ geom_point(data=tibble(x=t_difference, y=0),
+ aes(x=x, y=y), color="red", size=3) +
+ theme_bw()+
+ # Specify axis ticks
+ scale_x_continuous("t", breaks=t.breaks,
+ sec.axis = sec_axis(~., bquote(bar(x)),
+ breaks=t.breaks,
+ labels=xbar.breaks))
+```
