@@ -223,6 +223,7 @@ For each column of data (Farther, Closer, and Difference), I performed a t test.
 mu0 = 0 
 t.test(data.birds$Farther, alternative = "less", mu = mu0)
 t.test(data.birds$Farther)
+t_farther = -7.92
 ```
 
 The far responses differed significantly from 0 ($t = -7.92$, $p = 1.86 * 10^(-8)$, CI: -$.268$, $-.157$). This means that the null hypothesis can be rejected, and that the observed data is nearly 8 standard deviations away from the mean if the null was true. 
@@ -230,12 +231,14 @@ The far responses differed significantly from 0 ($t = -7.92$, $p = 1.86 * 10^(-8
 ```{r}
 t.test(data.birds$Closer, alternative = "greater", mu = mu0)
 t.test(data.birds$Closer)
+t_closer = 9.15
 ```
 
 The close responses differed significantly from 0 ($t = 9.15$, $p = 1.33 * 10^(-9)$, CI: $.138$, $.218$). This means that the null hypothesis can be rejected, and that the observed data is more than 9 standard deviations away from the mean if the null was true. 
 
 ```{r}
 t.test(data.birds$Difference, alternative = "two.sided", mu = mu0)
+t_difference = 9.14
 ```
 
 The difference between populations was significant ($t = 9.14$, $p = 2.75 * 10^(-9)$, CI: $.303$, $.479$). This means that the null hypothesis can be rejected, and that the observed data is more than 9 standard deviations away from the mean if the null was true. 
@@ -248,13 +251,17 @@ to highlight the rejection region and the $p$-value. Additionally, add the
 resampling distribution for $T$ to the chart to demonstrate any differences 
 between the null distribution and the distribution suggested by the data.
 
+**Solution**
+
+This code is for the first hypothesis test, when the birds are farther. 
+
 ```{r}
 n=6
 ggdat = tibble(t = seq(-4, 4, length.out=1000)) |>
   mutate(pdf.h0 = dt(t, df =n-1))
 
 t.breaks <- seq(-24, 24, 4)
-
+xbar.breaks <- round(t.breaks * (s/sqrt(n)) + mu0, 2)
 ts <- rep(NA, 1000)
 s <- sd(data.birds$Farther)
 n <- nrow(data.birds)
@@ -262,4 +269,38 @@ for(i in 1:1000){
   curr.sample <- sample(data.birds$Farther, size=n, replace=T)
   ts[i] <- (mean(curr.sample) - mu0)/(s/sqrt(n))
 }
+
 ```
+
+```{r}
+#| label: fig-density-further
+#| fig-cap: "Null T distributuion and the observed T statistic (solid red)"
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+ggplot(ggdat) +
+ geom_line(aes(x=t, y=pdf.h0))+ # plot distribution of T under H0
+ stat_density(data=tibble(t=ts), aes(x=t), color="grey", geom="line")+
+ geom_ribbon(data = ggdat |> filter(t < -2.015),
+  aes(x = t, ymin=0, ymax=pdf.h0),
+  fill="darkorchid2", alpha=0.50)+
+ geom_hline(yintercept=0) +
+ # Plot observation
+ geom_point(data=tibble(x=t_farther, y=0),
+ aes(x=x, y=y), color="red", size=3) +
+ # Plot mirrored observation
+#  geom_point(data=tibble(x=-t_farther, y=0),
+#  aes(x=x, y=y), color="red", size=3, alpha=0.3) +
+ theme_bw()+
+ # Specify axis ticks
+ scale_x_continuous("t", breaks=t.breaks,
+ sec.axis = sec_axis(~., bquote(bar(x)),
+ breaks=t.breaks,
+ labels=xbar.breaks))
+```
+
+Note that the resampling distribution is in light grey. This distribution, which is the sampling distribution estimated using only the data, does not appear to overlap at all with the null hypothesis distribution that is centered at zero. 
+
+# how do i know what the value to start highlighting under is 
